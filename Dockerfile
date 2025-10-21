@@ -39,12 +39,22 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy WordPress files
-COPY --from=wordpress:latest /usr/src/wordpress /var/www/html
+# Create a script to copy WordPress files on startup
+RUN echo '#!/bin/bash\n\
+if [ ! -f /var/www/html/wp-config.php ]; then\n\
+    echo "Copying WordPress files to volume..."\n\
+    cp -r /usr/src/wordpress/* /var/www/html/\n\
+    chown -R www-data:www-data /var/www/html\n\
+    chmod -R 755 /var/www/html\n\
+    echo "WordPress files copied successfully"\n\
+fi\n\
+# Set permissions for host user (UID 1000)\n\
+chown -R 1000:1000 /var/www/html\n\
+exec "$@"' > /usr/local/bin/entrypoint.sh && \
+    chmod +x /usr/local/bin/entrypoint.sh
 
-# Set proper permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html
+# Copy WordPress files to a temporary location
+COPY --from=wordpress:latest /usr/src/wordpress /usr/src/wordpress
 
 # Configure PHP
 RUN echo "upload_max_filesize = 50G" >> /usr/local/etc/php/conf.d/uploads.ini \
@@ -55,5 +65,5 @@ RUN echo "upload_max_filesize = 50G" >> /usr/local/etc/php/conf.d/uploads.ini \
 # Expose port
 EXPOSE 9000
 
-# Start PHP-FPM
-CMD ["php-fpm"]
+# Start PHP-FPM with custom entrypoint
+CMD ["/usr/local/bin/entrypoint.sh", "php-fpm"]

@@ -42,7 +42,7 @@ Edit the `.env` file to customize:
 
 ## Volumes
 
-- `wordpress_data`: WordPress files and uploads
+- `./wp`: WordPress files and uploads (bind mount to host)
 - `mysql_data`: MySQL database files
 
 ## Development Features
@@ -52,6 +52,7 @@ Edit the `.env` file to customize:
 - Nginx with optimized configuration
 - Persistent data storage
 - Easy database administration via phpMyAdmin
+- **WordPress files accessible on host** - Edit files directly in `./wp/` directory
 
 ## File Structure
 
@@ -61,6 +62,11 @@ wordpress-docker/
 ├── docker-compose.yml  # Docker Compose configuration
 ├── nginx.conf          # Nginx configuration
 ├── .env               # Environment variables
+├── wp/                # WordPress files (bind mount)
+│   ├── wp-admin/      # WordPress admin files
+│   ├── wp-content/    # Themes, plugins, uploads
+│   ├── wp-includes/   # WordPress core files
+│   └── ...            # Other WordPress files
 └── README.md          # This file
 ```
 
